@@ -831,5 +831,3 @@ This program is free software; you can redistribute it and/or modify it under th
 =head1 COPYRIGHT
 
 2016+ KMX E<lt>kmx@cpan.orgE<gt>
-
-1;
