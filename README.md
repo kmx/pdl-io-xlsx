@@ -193,5 +193,3 @@ This program is free software; you can redistribute it and/or modify it under th
 # COPYRIGHT
 
 2016+ KMX <kmx@cpan.org>
-
-1;
