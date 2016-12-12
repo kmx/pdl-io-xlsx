@@ -267,8 +267,6 @@ use Carp;
 
 use base 'PDL::IO::XLSX::Writer::Base';
 
-use Time::Moment;
-
 sub save {
   my $self = shift;
   my $sheets = $self->sheets->count;
@@ -317,14 +315,14 @@ use Carp;
 use base 'PDL::IO::XLSX::Writer::Base';
 
 my %builtin = (
-  '0'        => 1,  # 'int'    
-  '0.00'     => 2,  # 'float'  
-  '#,##0'    => 3,  # 'float'  
-  '#,##0.00' => 4,  # 'float'  
-  '0%'       => 9,  # 'int'    
-  '0.00%'    => 10, # 'float'  
+  '0'        => 1,  # 'int'
+  '0.00'     => 2,  # 'float'
+  '#,##0'    => 3,  # 'float'
+  '#,##0.00' => 4,  # 'float'
+  '0%'       => 9,  # 'int'
+  '0.00%'    => 10, # 'float'
   '0.00E+00' => 11, # 'float'
-  
+
 );
 
 sub get_style_attr {
@@ -691,7 +689,6 @@ use strict;
 use warnings;
 use Carp;
 
-use Data::Dumper;
 use File::Temp;
 use Archive::Zip;
 use Scalar::Util qw(openhandle looks_like_number);
@@ -741,7 +738,7 @@ sub xlsx_save {
   }
 
   #$self->sheets->save; #XXX-TODO
-  
+
   PDL::IO::XLSX::Writer::Workbook     ->new(%{$self->{extra_args}}, parent => $self)->save;
   PDL::IO::XLSX::Writer::PropsApp     ->new(%{$self->{extra_args}}, parent => $self)->save;
   PDL::IO::XLSX::Writer::PropsCore    ->new(%{$self->{extra_args}}, parent => $self)->save;
@@ -749,7 +746,7 @@ sub xlsx_save {
   PDL::IO::XLSX::Writer::ContentTypes ->new(%{$self->{extra_args}}, parent => $self)->save;
   PDL::IO::XLSX::Writer::RelWorkbook  ->new(%{$self->{extra_args}}, parent => $self)->save;
   PDL::IO::XLSX::Writer::RelRoot      ->new(%{$self->{extra_args}}, parent => $self)->save;
- 
+
   $self->styles->save;
   $self->strings->save;
 
@@ -772,20 +769,18 @@ __END__
                 company => 'ŽLUTÝ KůŇ',      # optional: default = undef
                 title   => 'ŽLUTÝ title',    # optional: default = undef
                 subject => 'ŽLUTÝ subject',  # optional: default = undef
-                col_format => [ ],
-                col_width  => [ ],
   );
-  
-  $xw->sheet_start("List1");
-  $xw->sheet_add_row([ "R1", "R2", "R3", "R4" ]);
-  $xw->sheet_add_row([ 1.12369, 2.12369, 3.12369, 4.12369 ], ['0.0','0.0','0.0','0.0']);
-  $xw->sheet_add_row([ 1.12369, 2.12369, 3.12369, 4.12369 ], ['0.0','0.0','0.0','0.0']);
-  $xw->sheet_save;
 
-  $xw->sheet_start("List2");
-  $xw->sheet_add_row([ "R11", "R22", "R33", "R44" ]);
-  $xw->sheet_add_row([ 1.12369, 2.12369, 3.12369, 4.12369 ], ['0.0E+00','0.0E+00','0.0E+00','0.0E+00']);
-  $xw->sheet_add_row([ 1.12369, 2.12369, 3.12369, 4.12369 ], ['0.0E+00','0.0E+00','0.0E+00','0.0E+00']);
-  $xw->sheet_save("output.xlsx");
+  $xw->sheets->start("List1");
+  $xw->sheets->add_row([ "R1", "R2", "R3", "R4" ]);
+  $xw->sheets->add_row([ 1.12369, 2.12369, 3.12369, 4.12369 ], ['0.0','0.0','0.0','0.0']);
+  $xw->sheets->add_row([ 1.12369, 2.12369, 3.12369, 4.12369 ], ['0.0','0.0','0.0','0.0']);
+  $xw->sheets->save;
+
+  $xw->sheets->start("List2");
+  $xw->sheets->add_row([ "R11", "R22", "R33", "R44" ]);
+  $xw->sheets->add_row([ 1.12369, 2.12369, 3.12369, 4.12369 ], ['0.0E+00','0.0E+00','0.0E+00','0.0E+00']);
+  $xw->sheets->add_row([ 1.12369, 2.12369, 3.12369, 4.12369 ], ['0.0E+00','0.0E+00','0.0E+00','0.0E+00']);
+  $xw->sheets->save("output.xlsx");
 
   $xw->xlsx_save;

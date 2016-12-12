@@ -697,7 +697,7 @@ or separately for each column/piddle:
 
   my ($a, $b, $c) = rxlsx1D($xlsx, {type => [long, double, double]});
 
-Special datetime handling (you need to have L<PDL::DateTime> installed):
+Special datetime handling:
 
   my ($a, $b, $c) = rxlsx1D($xlsx, {type => [long, 'datetime', double]});
   # piddle $b will be an instance of PDL::DateTime
@@ -728,12 +728,14 @@ values are silently converted into C<0>.
 
 =item * header
 
-Values C<0> (default) or C<N> (positive integer) - consider the first C<N> rows as headers and skip them.
+Values C<0> or C<N> (positive integer) - consider the first C<N> rows as headers and skip them.
 
 NOTE: header values (if any) are considered to be column names and are stored in loaded piddles in $pdl->hdr->{col_name}
 
 NOTE: C<rxlsx1D> accepts a special C<header> value C<'auto'> which skips rows (from beginning) that have
 in all columns non-numeric values.
+
+Default: for C<rxlsx1D> - C<'auto'>; for C<rxlsx2D> - C<0>.
 
 =item * debug
 
@@ -819,6 +821,10 @@ Saves data from one 2D piddle to XLSX file.
   $pdl->wxlsx2D("file.xlsx");
 
 Parameters and items supported in C<options> hash are the same as by L</wxlsx1D>.
+
+=head1 CREDITS
+
+This modules is largely inspired by L<Data::XLSX::Parser> and L<Excel::Writer::XLSX>.
 
 =head1 SEE ALSO
 

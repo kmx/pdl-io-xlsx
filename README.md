@@ -69,7 +69,7 @@ Items supported in **options** hash:
 
         my ($a, $b, $c) = rxlsx1D($xlsx, {type => [long, double, double]});
 
-    Special datetime handling (you need to have [PDL::DateTime](https://metacpan.org/pod/PDL::DateTime) installed):
+    Special datetime handling:
 
         my ($a, $b, $c) = rxlsx1D($xlsx, {type => [long, 'datetime', double]});
         # piddle $b will be an instance of PDL::DateTime
@@ -100,12 +100,14 @@ Items supported in **options** hash:
 
 - header
 
-    Values `0` (default) or `N` (positive integer) - consider the first `N` rows as headers and skip them.
+    Values `0` or `N` (positive integer) - consider the first `N` rows as headers and skip them.
 
     NOTE: header values (if any) are considered to be column names and are stored in loaded piddles in $pdl->hdr->{col\_name}
 
     NOTE: `rxlsx1D` accepts a special `header` value `'auto'` which skips rows (from beginning) that have
     in all columns non-numeric values.
+
+    Default: for `rxlsx1D` - `'auto'`; for `rxlsx2D` - `0`.
 
 - debug
 
@@ -181,6 +183,10 @@ Saves data from one 2D piddle to XLSX file.
     $pdl->wxlsx2D("file.xlsx");
 
 Parameters and items supported in `options` hash are the same as by ["wxlsx1D"](#wxlsx1d).
+
+# CREDITS
+
+This modules is largely inspired by [Data::XLSX::Parser](https://metacpan.org/pod/Data::XLSX::Parser) and [Excel::Writer::XLSX](https://metacpan.org/pod/Excel::Writer::XLSX).
 
 # SEE ALSO
 

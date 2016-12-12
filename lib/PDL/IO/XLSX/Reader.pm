@@ -226,11 +226,7 @@ sub _end {
 
         if (!defined $c->{ TYPE() }) {
             # actual value (number or date)
-            if (defined $v && ($c->{ FMT() }//'') =~ /^datetime\.(date)?(time)?$/) {
-                if (Scalar::Util::looks_like_number($v)) {
-                    $c->{ VALUE() } = $v + 0;
-                }
-            } elsif (Scalar::Util::looks_like_number($v)) {
+            if (Scalar::Util::looks_like_number($v)) {
                 $c->{ VALUE() } = $v + 0;
             }
         } else {
@@ -251,14 +247,6 @@ sub _end {
     elsif ($name eq 'v') {
         $self->{_is_value} = 0;
     }
-}
-
-sub _convert_serial_time {
-    my ($self, $serial_time) = @_;
-
-    # UNIX Epoch(1970/1/1 00:00:00) is 25569.0
-    my $epoch = ($serial_time - 25569) * 24 * 60 * 60; # * 1_000_000; # epoch microseconds
-    return Time::Piece::gmtime($epoch);
 }
 
 sub _char {
@@ -569,3 +557,19 @@ sub parse_sheet_by_id {
 }
 
 1;
+
+__END__
+
+  my $xr = PDL::IO::XLSX::Reader->new("filename.xlsx");
+
+  $xr->parse_sheet_by_name("Sheet1", sub {
+        my ($row_values, $row_formats) = @_;
+        #...
+  });
+
+  #or
+
+  $xr->parse_sheet_by_id(1, sub {
+        my ($row_values, $row_formats) = @_;
+        #...
+  });
