@@ -737,7 +737,7 @@ sub xlsx_save {
     open $fh, ">", $filename_or_fh or croak "$filename_or_fh: $!";
   }
 
-  #$self->sheets->save; #XXX-TODO
+  #$self->sheets->save; #XXX-TODO detect unsaved sheets
 
   PDL::IO::XLSX::Writer::Workbook     ->new(%{$self->{extra_args}}, parent => $self)->save;
   PDL::IO::XLSX::Writer::PropsApp     ->new(%{$self->{extra_args}}, parent => $self)->save;
