@@ -80,7 +80,6 @@ sub wxlsx1D {
 
   my @xlsx_format_array;
   my %xlsx_width_hash;
-  my $xlsx = PDL::IO::XLSX::Writer->new(%$C);
 
   while (blessed $_[0] && $_[0]->isa('PDL')) {
     $c_pdl[$cols] = shift;
@@ -109,7 +108,8 @@ sub wxlsx1D {
     $cols++;
   }
 
-  $xlsx->sheets->start("Sheet1", \%xlsx_width_hash, \@xlsx_format_array);
+  my $xlsx = PDL::IO::XLSX::Writer->new(%$C);
+  $xlsx->sheets->start($O->{sheet_name} // "Sheet1", \%xlsx_width_hash, \@xlsx_format_array);
 
   if (ref $O->{header} eq 'ARRAY') {
     croak "FATAL: wrong header (expected $cols items)" if $cols != scalar @{$O->{header}};
@@ -165,7 +165,7 @@ sub wxlsx2D {
   }
 
   my $xlsx = PDL::IO::XLSX::Writer->new(%$C);
-  $xlsx->sheets->start("PDL");
+  $xlsx->sheets->start($O->{sheet_name} // "Sheet1");
 
   if ($O->{header}) {
     my $n = scalar @{$O->{header}};
@@ -330,11 +330,20 @@ sub rxlsx1D {
   };
 
   warn "Fetching 1D " . _dbg_msg($O, $C) . "\n" if $O->{debug};
-  $xlsx->parse_sheet_by_id(1, sub {
-    my $r = [ map { $_->{v} } @{$_[0]} ]; #values
-    my $f = [ map { $_->{f} } @{$_[0]} ]; #formats
-    $proc_line->($r, $f);
-  });
+  if ($O->{sheet_name}) {
+    $xlsx->parse_sheet_by_name($O->{sheet_name}, sub {
+      my $r = [ map { $_->{v} } @{$_[0]} ]; #values
+      my $f = [ map { $_->{f} } @{$_[0]} ]; #formats
+      $proc_line->($r, $f);
+    });
+  }
+  else {
+    $xlsx->parse_sheet_by_id(1, sub {
+      my $r = [ map { $_->{v} } @{$_[0]} ]; #values
+      my $f = [ map { $_->{f} } @{$_[0]} ]; #formats
+      $proc_line->($r, $f);
+    });
+  }
 
   $proc_line->(undef); # flush/finalize
   if (ref $headerline eq 'ARRAY') {
@@ -454,11 +463,20 @@ sub rxlsx2D {
   };
 
   warn "Fetching 2D " . _dbg_msg($O, $C) . "\n" if $O->{debug};
-  $xlsx->parse_sheet_by_id(1, sub {
-    my $r = [ map { $_->{v} } @{$_[0]} ]; #values
-    my $f = [ map { $_->{f} } @{$_[0]} ]; #formats
-    $proc_line->($r, $f);
-  });
+  if ($O->{sheet_name}) {
+    $xlsx->parse_sheet_by_name($O->{sheet_name}, sub {
+      my $r = [ map { $_->{v} } @{$_[0]} ]; #values
+      my $f = [ map { $_->{f} } @{$_[0]} ]; #formats
+      $proc_line->($r, $f);
+    });
+  }
+  else {
+    $xlsx->parse_sheet_by_id(1, sub {
+      my $r = [ map { $_->{v} } @{$_[0]} ]; #values
+      my $f = [ map { $_->{f} } @{$_[0]} ]; #formats
+      $proc_line->($r, $f);
+    });
+  }
 
   $proc_line->(undef); # flush/finalize
 
@@ -481,7 +499,7 @@ sub _proc_wargs {
 
   my $C = { %$options }; # make a copy
 
-  my @keys = qw/ debug header bad2empty /;
+  my @keys = qw/ debug header bad2empty sheet_name /;
   my $O = { map { $_ => delete $C->{$_} } @keys };
   $O->{debug}     //= DEBUG;
   $O->{bad2empty} //= 1;
@@ -512,7 +530,7 @@ sub _proc_rargs {
   my $C = { %$options }; # make a copy
 
   # get options related to this module the rest will be passed to PDL::IO::XLSX::Reader|Writer
-  my @keys = qw/ reshape_inc type debug empty2bad text2bad header /;
+  my @keys = qw/ reshape_inc type debug empty2bad text2bad header sheet_name /;
   my $O = { map { $_ => delete $C->{$_} } @keys };
   $O->{reshape_inc} ||= 80_000;
   $O->{type}        ||= ($fn eq '1D' ? 'auto' : double);  #XXX-TODO backport to PDL::IO::CSV
@@ -742,6 +760,10 @@ in all columns non-numeric values.
 
 Default: for C<rxlsx1D> - C<'auto'>; for C<rxlsx2D> - C<0>.
 
+=item * sheet_name
+
+The name of xlsx sheet that will be read (default is the first sheet).
+
 =item * debug
 
 Values C<0> (default) or C<1> - turn on/off debug messages
@@ -803,6 +825,10 @@ Default: for C<wxlsx1D> - C<'auto'>; for C<wxlsx2D> - C<undef>.
 =item * bad2empty
 
 Values C<0> or C<1> (default) - convert BAD values into empty strings (there is a performance cost when turned on).
+
+=item * sheet_name
+
+The name of created sheet inside xlsx (default is C<'Sheet1'>).
 
 =item * debug
 

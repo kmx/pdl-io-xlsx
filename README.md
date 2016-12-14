@@ -106,6 +106,10 @@ Items supported in **options** hash:
 
     Default: for `rxlsx1D` - `'auto'`; for `rxlsx2D` - `0`.
 
+- sheet\_name
+
+    The name of xlsx sheet that will be read (default is the first sheet).
+
 - debug
 
     Values `0` (default) or `1` - turn on/off debug messages
@@ -159,6 +163,10 @@ Items supported in **options** hash:
 - bad2empty
 
     Values `0` or `1` (default) - convert BAD values into empty strings (there is a performance cost when turned on).
+
+- sheet\_name
+
+    The name of created sheet inside xlsx (default is `'Sheet1'`).
 
 - debug
 

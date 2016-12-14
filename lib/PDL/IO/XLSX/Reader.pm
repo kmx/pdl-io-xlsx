@@ -3,6 +3,7 @@ use 5.010;
 use strict;
 use warnings;
 
+use Carp;
 use XML::Parser::Expat;
 use Archive::Zip ();
 use File::Temp;
@@ -17,7 +18,7 @@ sub new {
     my $fh = File::Temp->new( SUFFIX => '.xml.rels');
 
     my $handle = $zip->memberNamed('xl/_rels/workbook.xml.rels') or return $self;
-    die 'Cannot write to: '.$fh->filename if $handle->extractToFileNamed($fh->filename) != Archive::Zip::AZ_OK;
+    croak 'Cannot write to: '.$fh->filename if $handle->extractToFileNamed($fh->filename) != Archive::Zip::AZ_OK;
 
     my $parser = XML::Parser::Expat->new;
     $parser->setHandlers(
@@ -63,6 +64,7 @@ use 5.010;
 use strict;
 use warnings;
 
+use Carp;
 use XML::Parser::Expat;
 use Archive::Zip ();
 use File::Temp;
@@ -79,7 +81,7 @@ sub new {
 
     my $fh = File::Temp->new( SUFFIX => '.xml' );
     my $handle = $zip->memberNamed('xl/sharedStrings.xml') or return $self;
-    die 'Cannot write to: '.$fh->filename if $handle->extractToFileNamed($fh->filename) != Archive::Zip::AZ_OK;
+    croak 'Cannot write to: '.$fh->filename if $handle->extractToFileNamed($fh->filename) != Archive::Zip::AZ_OK;
 
     my $parser = XML::Parser::Expat->new;
     $parser->setHandlers(
@@ -129,6 +131,7 @@ use 5.010;
 use strict;
 use warnings;
 
+use Carp;
 use File::Temp;
 use XML::Parser::Expat;
 use Archive::Zip ();
@@ -164,7 +167,7 @@ sub new {
 
     my $fh = File::Temp->new( SUFFIX => '.xml' );
     my $handle = $zip->memberNamed("xl/$target");
-    die 'Cannot write to: '.$fh->filename if $handle->extractToFileNamed($fh->filename) != Archive::Zip::AZ_OK;
+    croak 'Cannot write to: '.$fh->filename if $handle->extractToFileNamed($fh->filename) != Archive::Zip::AZ_OK;
 
     my $parser = XML::Parser::Expat->new;
     $parser->setHandlers(
@@ -275,7 +278,7 @@ sub _parse_rel {
     $cell->{ REF() } = [$v, $row];
 
     if ($cell->{ COLUMN() } > $v) {
-        die sprintf 'Detected smaller index than current cell, something is wrong! (row %s): %s <> %s', $row, $v, $cell->{ COLUMN() };
+        croak sprintf 'Detected smaller index than current cell, something is wrong! (row %s): %s <> %s', $row, $v, $cell->{ COLUMN() };
     }
 
     # add omitted cells
@@ -297,6 +300,7 @@ use 5.010;
 use strict;
 use warnings;
 
+use Carp;
 use XML::Parser::Expat;
 use Archive::Zip ();
 use File::Temp;
@@ -370,7 +374,7 @@ sub new {
     my $fh = File::Temp->new( SUFFIX => '.xml' );
 
     my $handle = $zip->memberNamed('xl/styles.xml');
-    die 'Cannot write to: '.$fh->filename if $handle->extractToFileNamed($fh->filename) != Archive::Zip::AZ_OK;
+    croak 'Cannot write to: '.$fh->filename if $handle->extractToFileNamed($fh->filename) != Archive::Zip::AZ_OK;
 
     my $parser = XML::Parser::Expat->new;
     $parser->setHandlers(
@@ -479,6 +483,7 @@ use 5.010;
 use strict;
 use warnings;
 
+use Carp;
 use XML::Parser::Expat;
 use Archive::Zip ();
 use File::Temp;
@@ -488,7 +493,7 @@ sub new {
     my $self = bless [], $class;
     my $fh = File::Temp->new( SUFFIX => '.xml' );
     my $handle = $zip->memberNamed('xl/workbook.xml');
-    die 'Cannot write to: '.$fh->filename if $handle->extractToFileNamed($fh->filename) != Archive::Zip::AZ_OK;
+    croak 'Cannot write to: '.$fh->filename if $handle->extractToFileNamed($fh->filename) != Archive::Zip::AZ_OK;
     my $parser = XML::Parser::Expat->new;
     $parser->setHandlers(
         Start => sub { $self->_start(@_) },
@@ -525,11 +530,16 @@ sub _start {
 }
 
 package PDL::IO::XLSX::Reader;
+use 5.010;
+use strict;
+use warnings;
+
+use Carp;
 
 sub new {
     my ($class, $filename) = @_;
     my $zip = Archive::Zip->new;
-    die "Cannot open file: $filename" if $zip->read($filename) != Archive::Zip::AZ_OK;
+    croak "Cannot open file: $filename" if $zip->read($filename) != Archive::Zip::AZ_OK;
     bless {
         _zip            => $zip,
         _workbook       => PDL::IO::XLSX::Reader::Workbook->new($zip),
@@ -542,6 +552,7 @@ sub new {
 sub parse_sheet_by_name {
     my ($self, $name, $row_callback) = @_;
     my $id = $self->{_workbook}->sheet_id($name);
+    croak "Non-existing sheet '$name'" if !defined $id;
     return $self->parse_sheet_by_id($id, $row_callback);
 }
 
