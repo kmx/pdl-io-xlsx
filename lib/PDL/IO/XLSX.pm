@@ -1,5 +1,5 @@
 package PDL::IO::XLSX;
-
+use 5.010;
 use strict;
 use warnings;
 
@@ -381,12 +381,18 @@ sub rxlsx2D {
             if (defined $coli) {
               for (0..$cols-1) {
                 my $i = $coli->[$_];
-                unless (defined $r->[$i]) { $r->[$i] = $c_bad; $c_pdl->badflag(1) }
+                if (($r->[$i]//'') eq '') {
+                  $r->[$i] = $c_bad;
+                  $c_pdl->badflag(1);
+                }
               }
             }
             else {
               for (0..$cols-1) {
-                unless (defined $r->[$_]) { $r->[$_] = $c_bad; $c_pdl->badflag(1) }
+                if (($r->[$_]//'') eq '') {
+                  $r->[$_] = $c_bad;
+                  $c_pdl->badflag(1);
+                }
               }
             }
           }

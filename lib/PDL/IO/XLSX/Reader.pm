@@ -1,4 +1,5 @@
 package PDL::IO::XLSX::Reader::Relationships;
+use 5.010;
 use strict;
 use warnings;
 
@@ -58,6 +59,7 @@ sub _end {
 }
 
 package PDL::IO::XLSX::Reader::SharedStrings;
+use 5.010;
 use strict;
 use warnings;
 
@@ -123,6 +125,7 @@ sub _char {
 }
 
 package PDL::IO::XLSX::Reader::Sheet;
+use 5.010;
 use strict;
 use warnings;
 
@@ -290,6 +293,7 @@ sub _parse_rel {
 }
 
 package PDL::IO::XLSX::Reader::Styles;
+use 5.010;
 use strict;
 use warnings;
 
@@ -456,11 +460,8 @@ sub _end {
 
 sub _parse_format_code_type {
     my ($self, $format_code) = @_;
-
     my $type;
-    if ($format_code =~ /;/) {
-        $type = 'unicode';
-    } elsif ($format_code =~ /(y|m|d|h|s)/) {
+    if ($format_code =~ /(y|m|d|h|s)/) {
         $type = 'datetime.';
 
         $type .= 'date' if $format_code =~ /(y|d)/;
@@ -470,11 +471,11 @@ sub _parse_format_code_type {
     } else {
         $type = 'unicode';
     }
-
     return $type;
 }
 
 package PDL::IO::XLSX::Reader::Workbook;
+use 5.010;
 use strict;
 use warnings;
 

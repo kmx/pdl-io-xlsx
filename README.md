@@ -58,8 +58,10 @@ Items supported in **options** hash:
 
 - type
 
-    Defines the type of output piddles: `double`, `float`, `longlong`, `long`, `short`, `byte`.
-    Default value is `double`. **BEWARE:** type \`longlong\` can be used only on perls with 64bitint support.
+    Defines the type of output piddles: `double`, `float`, `longlong`, `long`, `short`, `byte` + special
+    values `'auto'` (try to autodetect) and `'datetime'` (PDL::DateTime).
+
+    Default: for `rxlsx1D` - `'auto'`; for `rxlsx2D` - `double`.
 
     You can set one type for all columns/piddles:
 
@@ -73,11 +75,6 @@ Items supported in **options** hash:
 
         my ($a, $b, $c) = rxlsx1D($xlsx, {type => [long, 'datetime', double]});
         # piddle $b will be an instance of PDL::DateTime
-
-- fetch\_chunk
-
-    We do not try to load all XLSX data into memory at once; we load them in chunks defined by this parameter.
-    Default value is `40000` (XLSX rows).
 
 - reshape\_inc
 
@@ -135,8 +132,6 @@ Saves data from one or more 1D piddles to XLSX file.
     #or
     wxlsx1D($pdl1, $pdl2, $pdl3, $xlsx_filename_or_filehandle);
     #or
-    wxlsx1D($pdl1, $pdl2, \%options); #prints to STDOUT
-    #or
     wxlsx1D($pdl1, $pdl2);
 
     # but also as a piddle method
@@ -150,7 +145,7 @@ Parameters:
 
 - xlsx\_filename\_or\_filehandle
 
-    Path to XLSX file to write to or a filehandle open for writing. Default is STDOUT.
+    Path to XLSX file to write to or a filehandle open for writing.
 
 Items supported in **options** hash:
 
@@ -158,6 +153,8 @@ Items supported in **options** hash:
 
     Arrayref with values that will be printed as the first XLSX row. Or `'auto'` value which means that column
     names are taken from $pdl->hdr->{col\_name}.
+
+    Default: for `wxlsx1D` - `'auto'`; for `wxlsx2D` - `undef`.
 
 - bad2empty
 
@@ -174,8 +171,6 @@ Saves data from one 2D piddle to XLSX file.
     wxlsx2D($pdl, $xlsx_filename_or_filehandle, \%options);
     #or
     wxlsx2D($pdl, $xlsx_filename_or_filehandle);
-    #or
-    wxlsx2D($pdl, \%options); #prints to STDOUT
     #or
     wxlsx2D($pdl);
 
