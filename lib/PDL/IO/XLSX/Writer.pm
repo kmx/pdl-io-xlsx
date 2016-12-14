@@ -124,6 +124,7 @@ sub count {
 sub get_sstring_id {
   my $self = shift;
   my $string = shift;
+  croak "get_sstring_id: undefined string" unless defined $string;
   if (!defined $self->{_ss_hash}{$string}) {
     $self->{_ss_hash}{$string} = keys %{$self->{_ss_hash}}; # 0-based index
   }
@@ -663,7 +664,7 @@ sub add_row {
         $xmlcells .= sprintf('<c r="%s"><v>%s</v></c>', $row2letter[$c-1] . $r, $val);
       }
     }
-    else {
+    elsif (($val//'') ne '') {
       my $id = $self->strings->get_sstring_id($val);
       $xmlcells .= sprintf('<c r="%s" t="s"><v>%s</v></c>', $row2letter[$c-1] . $r, $id);
     }
