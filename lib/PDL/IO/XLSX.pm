@@ -11,8 +11,7 @@ our %EXPORT_TAGS = (all => \@EXPORT_OK);
 our $VERSION = '0.003';
 
 use Config;
-use constant NO64BITINT => ($Config{ivsize} < 8) ? 1 : 0;
-use constant DEBUG      => $ENV{PDL_IO_XLSX_DEBUG} ? 1 : 0;
+use constant DEBUG => $ENV{PDL_IO_XLSX_DEBUG} ? 1 : 0;
 
 use PDL;
 use PDL::IO::XLSX::Writer;
@@ -92,7 +91,6 @@ sub wxlsx1D {
     my $type             = $c_pdl[$cols]->type;
     my $dim              = $c_pdl[$cols]->dim(0);
     $c_pack[$cols]       = $pck{$type};
-    croak "FATAL: your perl does not support 64bitint (avoid using type longlong)" if $c_pack[$cols] eq 'q' && NO64BITINT;
     $c_max_offset[$cols] = $c_size[$cols] * $dim;
     $rows = $dim if $rows < $dim;
     if ($bad2empty && $c_pdl[$cols]->check_badflag) {
@@ -155,7 +153,6 @@ sub wxlsx2D {
   my $size = PDL::Core::howbig($p->get_datatype);
   my $packC = $pck{$type} . "[$cols]";
   my $pack1 = $pck{$type};
-  croak "FATAL: your perl does not support 64bitint (avoid using type longlong)" if $pck{$type} eq 'q' && NO64BITINT;
   my $dataref = $p->get_dataref;
   my $offset = 0;
   my $colsize = $size * $cols;
@@ -579,7 +576,6 @@ sub _init_1D {
   for (0..$cols-1) {
     $c_type[$_] = double if !defined $c_type[$_];
     $c_pack[$_] = $pck{$c_type[$_]};
-    croak "FATAL: your perl does not support 64bitint (avoid using type longlong)" if $c_pack[$_] eq 'q' && NO64BITINT;
     croak "FATAL: invalid type '$c_type[$_]' for column $_" if !$c_pack[$_];
     $c_sizeof[$_] = length pack($c_pack[$_], 1);
     $c_pdl[$_] = $c_dt[$_] ? PDL::DateTime->new(zeroes(longlong, $allocated)) : zeroes($c_type[$_], $allocated);
@@ -608,7 +604,6 @@ sub _init_2D {
 
   my $c_type = $O->{type};
   my $c_pack = $pck{$c_type};
-  croak "FATAL: your perl does not support 64bitint (avoid using type longlong)" if $c_pack eq 'q' && NO64BITINT;
   croak "FATAL: invalid type '$c_type' for column $_" if !$c_pack;
 
   my $allocated = $O->{reshape_inc};
