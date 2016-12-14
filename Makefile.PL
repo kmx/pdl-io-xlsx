@@ -32,7 +32,7 @@ WriteMakefile(
       },
   },
   dist => {
-      ($^O eq 'MSWin32' ? (TAR => 'ptar', TARFLAGS => '-c -C -f') : ()),
+      ($^O eq 'MSWin32' ? (TAR => 'ptar', TARFLAGS => '-c -C -f') : (TARFLAGS => '--owner=0 --group=0 -cvf')),
       PREOP => 'perldoc -u lib/PDL/IO/XLSX.pm | pod2markdown > README.md',
   },
 );
