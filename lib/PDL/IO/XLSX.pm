@@ -55,7 +55,7 @@ sub _longlong2serialdate {
 }
 
 sub wxlsx1D {
-  my ($fh, $O, $C) = _proc_wargs(@_);
+  my ($fh, $O, $C) = _proc_wargs('1D', @_);
 
   my $cols = 0;
   my $rows = 0;
@@ -101,7 +101,7 @@ sub wxlsx1D {
       $c_bad[$cols] = substr($$d, 0, $c_size[$cols]); # raw bytes representind BAD value
     }
     if (ref $c_pdl[$cols] eq 'PDL::DateTime') {
-      my $strf = $c_pdl[$cols]->_autodetect_strftime_format; #XXX-FIXME _autodetect_strftime_format is a hack!!
+      my $strf = $c_pdl[$cols]->_autodetect_strftime_format; #XXX-TODO _autodetect_strftime_format is a hack!!
       my ($len, $fmt) = @{$alias{$strf}};
       if (defined $len && defined $fmt) {
         $xlsx_format_array[$cols] = $fmt; # 0-based index
@@ -113,10 +113,11 @@ sub wxlsx1D {
 
   $xlsx->sheets->start("Sheet1", \%xlsx_width_hash, \@xlsx_format_array);
 
-  if ($O->{header}) {
+  if (ref $O->{header} eq 'ARRAY') {
     croak "FATAL: wrong header (expected $cols items)" if $cols != scalar @{$O->{header}};
-    $xlsx->sheets->add_row($O->{header});
+    $xlsx->sheets->add_row($O->{header}); #XXX-TODO apply a special style for header cells (gray background)
   }
+
   for my $r (0..$rows-1) {
     my @v = ('') x $cols;
     for my $c (0..$cols-1) {
@@ -136,7 +137,7 @@ sub wxlsx1D {
       }
       $c_offset[$c] += $c_size[$c];
     }
-    $xlsx->sheets->add_row(\@v, \@xlsx_format_array);
+    $xlsx->sheets->add_row(\@v);
   }
   $xlsx->sheets->save;
   $xlsx->xlsx_save($fh, $C->{overwrite});
@@ -144,7 +145,7 @@ sub wxlsx1D {
 
 sub wxlsx2D {
   my $pdl = shift;
-  my ($fh, $O, $C) = _proc_wargs(@_);
+  my ($fh, $O, $C) = _proc_wargs('2D', @_);
 
   croak "FATAL: wxlsx2D() expects 2D piddle" unless $pdl->ndims == 2;
   my $p = $pdl->transpose;
@@ -198,7 +199,7 @@ sub rxlsx1D {
   my $xlsx = PDL::IO::XLSX::Reader->new($fh, %$C);
   my $processed = 0;
   my $finished = 0;
-  my $chunk = $O->{fetch_chunk};
+  my $reshape_inc = $O->{reshape_inc};
   my $empty2bad = $O->{empty2bad};
   my $text2bad  = $O->{text2bad};
 
@@ -296,7 +297,7 @@ sub rxlsx1D {
           }
           $rows++;
         }
-        if ($rows >= $chunk || !defined $r) {
+        if ($rows >= $reshape_inc || !defined $r) {
           $processed += $rows;
           if (!defined $r) {
             # flush/finalize
@@ -308,7 +309,7 @@ sub rxlsx1D {
             }
           }
           elsif ($allocated < $processed) {
-            $allocated += $O->{reshape_inc};
+            $allocated += $reshape_inc;
             warn "Reshape to: '$allocated'\n" if $O->{debug};
             for (0..$cols-1) {
               $c_pdl->[$_]->reshape($allocated);
@@ -358,7 +359,7 @@ sub rxlsx2D {
   my $processed = 0;
   my $c_idx = 0;
   my $pck;
-  my $chunk = $O->{fetch_chunk};
+  my $reshape_inc = $O->{reshape_inc};
   my $empty2bad = $O->{empty2bad};
   my $text2bad  = $O->{text2bad};
   my $bcount = 0;
@@ -419,7 +420,7 @@ sub rxlsx2D {
           }
           $rows++;
         }
-        if ($rows >= $chunk || !defined $r) {
+        if ($rows >= $reshape_inc || !defined $r) {
           $processed += $rows;
           if (!defined $r) {
             # flush/finalize
@@ -429,7 +430,7 @@ sub rxlsx2D {
             $c_dataref = $c_pdl->get_dataref;
           }
           elsif ($allocated < $processed) {
-            $allocated += $O->{reshape_inc};
+            $allocated += $reshape_inc;
             warn "Reshaping to $allocated\n" if $O->{debug};
             $c_pdl->reshape($cols, $allocated);
             $c_dataref = $c_pdl->get_dataref;
@@ -464,8 +465,7 @@ sub rxlsx2D {
 
 sub _dbg_msg {
   my ($O, $C) = @_;
-  sprintf "chunk=%s, reshape=%s, bad=%s/%s",
-        $O->{fetch_chunk} ||= '?',
+  sprintf "reshape=%s, bad=%s/%s",
         $O->{reshape_inc} ||= '?',
         $O->{empty2bad}   ||= '?',
         $O->{text2bad}    ||= '?',
@@ -474,13 +474,15 @@ sub _dbg_msg {
 sub _proc_wargs {
   my $options        = ref $_[-1] eq 'HASH' ? pop : {};
   my $filename_or_fh = !blessed $_[-1] || !$_[-1]->isa('PDL') ? pop : undef;
+  my $fn = shift;
 
   my $C = { %$options }; # make a copy
 
   my @keys = qw/ debug header bad2empty /;
   my $O = { map { $_ => delete $C->{$_} } @keys };
-  $O->{debug}     = DEBUG unless defined $O->{debug};
-  $O->{bad2empty} = 1     unless defined $O->{bad2empty};
+  $O->{debug}     //= DEBUG;
+  $O->{bad2empty} //= 1;
+  $O->{header}    //= ($fn eq '1D' ? 'auto' : undef); #XXX-TODO backport to PDL::IO::CSV
 
   if (defined $O->{header}) {
     croak "FATAL: header should be arrayref" unless ref $O->{header} eq 'ARRAY' || $O->{header} eq 'auto';
@@ -507,16 +509,12 @@ sub _proc_rargs {
   my $C = { %$options }; # make a copy
 
   # get options related to this module the rest will be passed to PDL::IO::XLSX::Reader|Writer
-  my @keys = qw/ reshape_inc fetch_chunk type debug empty2bad text2bad header /;
+  my @keys = qw/ reshape_inc type debug empty2bad text2bad header /;
   my $O = { map { $_ => delete $C->{$_} } @keys };
-  $O->{fetch_chunk} ||= 40_000;
   $O->{reshape_inc} ||= 80_000;
-  $O->{type}        ||= double;
-  $O->{header}      ||= ($fn eq '1D' ? 'auto' : 0);#XXX-backport to CSV
+  $O->{type}        ||= ($fn eq '1D' ? 'auto' : double);  #XXX-TODO backport to PDL::IO::CSV
+  $O->{header}      ||= ($fn eq '1D' ? 'auto' : 0);       #XXX-TODO backport to PDL::IO::CSV
   $O->{debug} = DEBUG unless defined $O->{debug};
-
-  # reshape_inc cannot be lower than fetch_chunk
-  $O->{reshape_inc} = $O->{fetch_chunk} if $O->{reshape_inc} < $O->{fetch_chunk};
 
   # empty2bad implies some PDL::IO::XLSX::Reader extra options
   if ($O->{empty2bad}) {
@@ -549,20 +547,29 @@ sub _init_1D {
   my @c_idx;
 
   if (ref $O->{type} eq 'ARRAY') {
-    @c_type = @{$O->{type}};
-    push @c_type, ((double) x ($cols - @c_type));
+    $c_type[$_] = $O->{type}->[$_] for (0..$cols-1);
   }
   else {
     $c_type[$_] = $O->{type} for (0..$cols-1);
   }
 
+  for (0..$cols-1) {
+    if (!defined $c_type[$_] || $c_type[$_] eq 'auto') {
+      if ($firstline_f->[$_] =~ /^datetime\.(date|time|datetime)$/) {
+        $c_type[$_] = 'datetime';
+      }
+      elsif ($firstline_f->[$_] eq 'int') {
+        $c_type[$_] = longlong;
+      }
+      else {
+        $c_type[$_] = double;
+      }
+    }
+  }
+
   my @c_dt;
   for (0..$cols-1) {
     if ($c_type[$_] eq 'datetime') {
-      $c_type[$_] = longlong;
-      $c_dt[$_] = 'datetime';
-    }
-    elsif ($firstline_f->[$_] =~ /^datetime\.(date|time|datetime)$/) {
       $c_type[$_] = longlong;
       $c_dt[$_] = 'datetime';
     }
@@ -686,8 +693,10 @@ Items supported in B<options> hash:
 
 =item * type
 
-Defines the type of output piddles: C<double>, C<float>, C<longlong>, C<long>, C<short>, C<byte>.
-Default value is C<double>. B<BEWARE:> type `longlong` can be used only on perls with 64bitint support.
+Defines the type of output piddles: C<double>, C<float>, C<longlong>, C<long>, C<short>, C<byte> + special
+values C<'auto'> (try to autodetect) and C<'datetime'> (PDL::DateTime).
+
+Default: for C<rxlsx1D> - C<'auto'>; for C<rxlsx2D> - C<double>.
 
 You can set one type for all columns/piddles:
 
@@ -701,11 +710,6 @@ Special datetime handling:
 
   my ($a, $b, $c) = rxlsx1D($xlsx, {type => [long, 'datetime', double]});
   # piddle $b will be an instance of PDL::DateTime
-
-=item * fetch_chunk
-
-We do not try to load all XLSX data into memory at once; we load them in chunks defined by this parameter.
-Default value is C<40000> (XLSX rows).
 
 =item * reshape_inc
 
@@ -765,8 +769,6 @@ Saves data from one or more 1D piddles to XLSX file.
   #or
   wxlsx1D($pdl1, $pdl2, $pdl3, $xlsx_filename_or_filehandle);
   #or
-  wxlsx1D($pdl1, $pdl2, \%options); #prints to STDOUT
-  #or
   wxlsx1D($pdl1, $pdl2);
 
   # but also as a piddle method
@@ -782,7 +784,7 @@ One or more 1D piddles. All has to be 1D but may have different count of element
 
 =item xlsx_filename_or_filehandle
 
-Path to XLSX file to write to or a filehandle open for writing. Default is STDOUT.
+Path to XLSX file to write to or a filehandle open for writing.
 
 =back
 
@@ -794,6 +796,8 @@ Items supported in B<options> hash:
 
 Arrayref with values that will be printed as the first XLSX row. Or C<'auto'> value which means that column
 names are taken from $pdl->hdr->{col_name}.
+
+Default: for C<wxlsx1D> - C<'auto'>; for C<wxlsx2D> - C<undef>.
 
 =item * bad2empty
 
@@ -812,8 +816,6 @@ Saves data from one 2D piddle to XLSX file.
   wxlsx2D($pdl, $xlsx_filename_or_filehandle, \%options);
   #or
   wxlsx2D($pdl, $xlsx_filename_or_filehandle);
-  #or
-  wxlsx2D($pdl, \%options); #prints to STDOUT
   #or
   wxlsx2D($pdl);
 

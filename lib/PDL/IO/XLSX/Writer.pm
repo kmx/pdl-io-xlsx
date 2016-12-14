@@ -124,10 +124,10 @@ sub count {
 sub get_sstring_id {
   my $self = shift;
   my $string = shift;
-  if ($self->{_ss_hash}{$string}) {
-    return $self->{_ss_hash}{$string}{seqid};
+  if (!defined $self->{_ss_hash}{$string}) {
+    $self->{_ss_hash}{$string} = keys %{$self->{_ss_hash}}; # 0-based index
   }
-  $self->{_ss_hash}{$string}{seqid} = keys %{$self->{_ss_hash}}; # 0-based index
+  return $self->{_ss_hash}{$string};
 }
 
 sub save {
@@ -373,6 +373,15 @@ sub save {
   $self->write_xml_start_tag($fh, 'fill');
   $self->write_xml_empty_tag($fh, 'patternFill', patternType => "gray125");
   $self->write_xml_end_tag($fh, 'fill');
+
+  ### header style - gray background XXX-TODO
+  #$self->write_xml_start_tag($fh, 'fill');
+  #$self->write_xml_start_tag($fh, 'patternFill', patternType => "solid");
+  #$self->write_xml_empty_tag($fh, 'fgColor', theme => "0", tint => "-0.14999847407452621");
+  #$self->write_xml_empty_tag($fh, 'bgColor', indexed => "64");
+  #$self->write_xml_end_tag($fh, 'patternFill');
+  #$self->write_xml_end_tag($fh, 'fill');
+
   $self->write_xml_end_tag($fh, 'fills');
   $self->write_xml_start_tag($fh, 'borders', count => 1);
   $self->write_xml_start_tag($fh, 'border');
