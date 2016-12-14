@@ -15,7 +15,6 @@ PDL::IO::XLSX - Load/save PDL from/to XLSX file (optimized for speed and large d
     wxlsx1D($pdl1, 'col2.xlsx');
     #or
     $pdl2->wxlsx1D('col2.xlsx');
-    $pdl2->wxlsx1D('col2_tabs.xlsx', { author => 'PDL' });
 
 # DESCRIPTION
 
