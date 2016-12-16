@@ -8,6 +8,7 @@ WriteMakefile(
   VERSION_FROM  => 'lib/PDL/IO/XLSX.pm',
   ABSTRACT_FROM => 'lib/PDL/IO/XLSX.pm',
   LICENSE       => 'perl',
+  MIN_PERL_VERSION => '5.010',
   PREREQ_PM     => {
         'PDL'                 => '2.006', # we need: unpdl
         'PDL::DateTime'       => 0,
@@ -28,7 +29,8 @@ WriteMakefile(
   },
   META_MERGE => {
       resources    => {
-        repository   => 'https://github.com/kmx/pdl-io-xlsx',
+        repository => 'https://github.com/kmx/pdl-io-xlsx',
+        bugtracker => 'https://github.com/kmx/pdl-io-xlsx/issues',
       },
   },
   dist => {
