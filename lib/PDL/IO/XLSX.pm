@@ -503,7 +503,7 @@ sub _proc_wargs {
   my $O = { map { $_ => delete $C->{$_} } @keys };
   $O->{debug}     //= DEBUG;
   $O->{bad2empty} //= 1;
-  $O->{header}    //= ($fn eq '1D' ? 'auto' : undef); #XXX-TODO backport to PDL::IO::CSV
+  $O->{header}    //= ($fn eq '1D' ? 'auto' : undef);
 
   if (defined $O->{header}) {
     croak "FATAL: header should be arrayref" unless ref $O->{header} eq 'ARRAY' || $O->{header} eq 'auto';
@@ -533,8 +533,8 @@ sub _proc_rargs {
   my @keys = qw/ reshape_inc type debug empty2bad text2bad header sheet_name /;
   my $O = { map { $_ => delete $C->{$_} } @keys };
   $O->{reshape_inc} ||= 80_000;
-  $O->{type}        ||= ($fn eq '1D' ? 'auto' : double);  #XXX-TODO backport to PDL::IO::CSV
-  $O->{header}      ||= ($fn eq '1D' ? 'auto' : 0);       #XXX-TODO backport to PDL::IO::CSV
+  $O->{type}        ||= ($fn eq '1D' ? 'auto' : double);
+  $O->{header}      ||= ($fn eq '1D' ? 'auto' : 0);
   $O->{debug} = DEBUG unless defined $O->{debug};
 
   # empty2bad implies some PDL::IO::XLSX::Reader extra options
