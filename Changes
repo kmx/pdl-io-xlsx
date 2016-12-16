@@ -1,4 +1,7 @@
 Changes for PDL::IO::XLSX
 
+0.004   2016/12/XX
+        - Makefile.PL tuning
+
 0.003   2016/12/14
         - first public release
