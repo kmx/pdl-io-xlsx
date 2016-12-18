@@ -69,11 +69,11 @@ sub wxlsx1D {
   my @c_bad;
 
   my %alias = (
-    '%Y-%m-%d'              => [ 10, 'yyyy\-mm\-dd' ],
+    '%Y-%m-%d'              => [ 11, 'yyyy\-mm\-dd' ],
     '%Y-%m-%dT%H:%M'        => [ 16, 'yyyy\-mm\-dd\ hh:mm' ],
-    '%Y-%m-%dT%H:%M:%S'     => [ 19, 'yyyy\-mm\-dd\ hh:mm:ss' ],
-    '%Y-%m-%dT%H:%M:%S.%3N' => [ 23, 'yyyy\-mm\-dd\ hh:mm:ss.000' ],
-    '%Y-%m-%dT%H:%M:%S.%6N' => [ 23, 'yyyy\-mm\-dd\ hh:mm:ss.000' ],
+    '%Y-%m-%dT%H:%M:%S'     => [ 18, 'yyyy\-mm\-dd\ hh:mm:ss' ],
+    '%Y-%m-%dT%H:%M:%S.%3N' => [ 22, 'yyyy\-mm\-dd\ hh:mm:ss.000' ],
+    '%Y-%m-%dT%H:%M:%S.%6N' => [ 22, 'yyyy\-mm\-dd\ hh:mm:ss.000' ],
   );
 
   my $bad2empty = $O->{bad2empty};
