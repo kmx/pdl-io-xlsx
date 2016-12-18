@@ -8,7 +8,7 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK   = qw(rxlsx1D rxlsx2D wxlsx1D wxlsx2D);
 our %EXPORT_TAGS = (all => \@EXPORT_OK);
 
-our $VERSION = '0.003';
+our $VERSION = '0.004';
 
 use Config;
 use constant DEBUG => $ENV{PDL_IO_XLSX_DEBUG} ? 1 : 0;
