@@ -5,7 +5,7 @@ use Test::More;
 use PDL;
 use PDL::IO::XLSX ':all';
 use Test::Number::Delta relative => 0.00001;
-use PDL::Datetime;
+use PDL::DateTime;
 use Config;
 
 ok(-f 't/_sample4.xlsx');
